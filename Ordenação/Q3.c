@@ -104,6 +104,10 @@ void print_list(List* list){
     Node* current_node = list->head;
     while (current_node != NULL)
     {
+        if(current_node->next == NULL){
+            printf("%d\n", current_node->info);
+            return;
+        }
         printf("%d ", current_node->info);
         current_node = current_node->next;
     }  
@@ -130,7 +134,7 @@ void print_stack(Stack* stack){
       }
       aux = aux->next;
     }
-    printf("] ");
+    printf("]");
 }
 
 //------------------------------------------------------------------------------
@@ -158,6 +162,7 @@ int main(){
     if(wookies == 0){
         printf("Os Wookies foram para o lado sombrio da força!\n");
         print_list(lista_cargas);
+        // Liberar memória!!!!!!!!!!!!
     }
 
     else{
@@ -182,28 +187,55 @@ int main(){
             remove_list(lista_cargas, aux->info);
         }
 
-        while(lista_cargas->head != NULL){
-            
+        ///*
+        // Acrescentando Cargas a cada pilha de Wookies;
+        current_node = lista_cargas->head;
+        aux = NULL;
+
+        while(current_node != NULL){
+            for(int i = 0; i < wookies; i++){
+                if(lista_cargas->length == 0){
+                    break;
+                }
+                if(wookies_load[i]->top->info > current_node->info){
+                    push(wookies_load[i], current_node->info);
+                    aux = current_node;
+                    current_node = current_node->next;
+                    remove_list(lista_cargas, aux->info);
+                    break;
+                }
+                if(i == wookies - 1){
+                    aux = current_node;
+                    current_node = current_node->next;
+                    break;
+                }
+            }
         }
-        
+        //*/
+
+        // Ordenando Wookies;
+
         
         // Imprimindo pilhas
         for(int i = 0; i < wookies; i++){
             print_stack(wookies_load[i]);
+            if(i == wookies - 1){
+                printf("\n");
+                break;
+            }
+            printf(" ");
         }
         
         // Caso 2;
-        if(wookies >= lista_cargas->length){
-            for(int i = 0; i < wookies; i++){
-                print_stack(wookies_load[i]);
-            }
-            printf("\nA força está com os Wookies!\n");
+        if(lista_cargas->length == 0){
+            printf("A força está com os Wookies!\n");
+            // Liberar memória!!!!!!!!!!
             return 0;
         }
 
-        printf("\n");
         print_list(lista_cargas);
-        printf("\n%d", lista_cargas->length);
+        printf("%d\n", lista_cargas->length);
+        // Liberar memória!!!!!!!!!!
     }
     
     return 0;
