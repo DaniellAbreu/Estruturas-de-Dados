@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -10,6 +9,7 @@
 typedef struct Node{
     int info;
     struct Node* next;
+    struct Node* back;
 } Node;
 
 typedef struct List{
@@ -27,6 +27,7 @@ typedef struct Stack{
 Node* create_node(int info){
     Node* node = (Node *) malloc(sizeof(Node));
     node->next = NULL;
+    node->back= NULL;
     node->info = info;
 
     return node;
@@ -113,28 +114,74 @@ void print_list(List* list){
     }  
 }
 
+void free_list(List* list){
+    Node* free_ptr;
+    Node* aux_ptr = list->head;
+    
+    while(aux_ptr != NULL)
+    {
+        free_ptr = aux_ptr;
+        aux_ptr = aux_ptr->next;
+        free(free_ptr);
+    }
+    free(list);
+}
+
 //------------------------------------------------------------------------------
 
 void push(Stack* stack, int info){
     Node* new_node = create_node(info);
-    
+
+    if(stack->top == NULL){
+        new_node->next = stack->top;
+        stack->top = new_node;
+        stack->sum += info;
+        return;
+    }
+
     new_node->next = stack->top;
+    stack->top->back = new_node;
     stack->top = new_node;
-    stack->sum = stack->sum + info;
+    stack->sum += info;
 }
 
 void print_stack(Stack* stack){
     Node* aux = stack->top;
     
+    if(stack->top == NULL){
+        printf("[]");
+        return;
+    }
+
+    while(aux->next != NULL){
+        aux = aux->next;
+    }
+    
+    //Imprimindo pilha de trás para frente;
     printf("[");
     while(aux != NULL){
       printf("%d", aux->info);
-      if(aux->next != NULL){
+      if(aux->back != NULL){
         printf(", ");
       }
-      aux = aux->next;
+      aux = aux->back;
     }
     printf("]");
+}
+
+//------------------------------------------------------------------------------
+
+int load_key(const void* wookie1_void, const void* wookie2_void){
+    Stack* wookie1 = *(Stack **) wookie1_void;
+    Stack* wookie2 = *(Stack **) wookie2_void;
+    
+    if(wookie1->sum < wookie2->sum){
+        return 1;
+    }
+    if(wookie1->sum > wookie2->sum){
+        return -1;
+    }
+    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -162,7 +209,7 @@ int main(){
     if(wookies == 0){
         printf("Os Wookies foram para o lado sombrio da força!\n");
         print_list(lista_cargas);
-        // Liberar memória!!!!!!!!!!!!
+        free_list(lista_cargas);
     }
 
     else{
@@ -172,7 +219,7 @@ int main(){
         for(int i = 0; i < wookies; i++){
             wookies_load[i] = create_stack();
         }
-        
+
         // Acrescentando cargas iniciais a cada Wookie;
         Node* current_node = lista_cargas->head;
         Node* aux = NULL;
@@ -187,7 +234,6 @@ int main(){
             remove_list(lista_cargas, aux->info);
         }
 
-        ///*
         // Acrescentando Cargas a cada pilha de Wookies;
         current_node = lista_cargas->head;
         aux = NULL;
@@ -197,7 +243,7 @@ int main(){
                 if(lista_cargas->length == 0){
                     break;
                 }
-                if(wookies_load[i]->top->info > current_node->info){
+                if(wookies_load[i]->top->info >= current_node->info){
                     push(wookies_load[i], current_node->info);
                     aux = current_node;
                     current_node = current_node->next;
@@ -211,10 +257,10 @@ int main(){
                 }
             }
         }
-        //*/
 
         // Ordenando Wookies;
-
+        qsort(wookies_load, wookies, sizeof(wookies_load[0]), load_key);
+        
         
         // Imprimindo pilhas
         for(int i = 0; i < wookies; i++){
@@ -225,16 +271,15 @@ int main(){
             }
             printf(" ");
         }
-        
+
         // Caso 2;
         if(lista_cargas->length == 0){
             printf("A força está com os Wookies!\n");
-            // Liberar memória!!!!!!!!!!
+            free(lista_cargas);
             return 0;
-        }
-
+        }    
+        
         print_list(lista_cargas);
-        printf("%d\n", lista_cargas->length);
         // Liberar memória!!!!!!!!!!
     }
     

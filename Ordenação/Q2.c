@@ -26,7 +26,7 @@ int chave_mencao(Aluno* aluno1, Aluno* aluno2){
         }
     }
 
-    if(indice1 == -1 || indice1 == -1){
+    if(indice1 == -1 || indice2 == -1){
         exit(1);
     }
 
